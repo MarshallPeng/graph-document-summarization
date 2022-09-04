@@ -73,7 +73,9 @@ def find_similar_pairs(A, K):
             continue
 
         if sample not in R:
-            R[sample] = 0
-        R[sample] += 1
+            R[sample] = {}
+            R[sample]['count'] = 0
+            R[sample]['dot_product'] = np.dot(A[..., sample[0]], A[..., sample[1]])
+        R[sample]['count'] += 1
 
     return R

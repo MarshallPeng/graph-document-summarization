@@ -16,15 +16,17 @@ if __name__ == "__main__":
 
     R = find_similar_pairs(A, K)
 
-    greater_than = set()
-    less_than = set()
+    print(R)
 
-    for i, j in R:
-        dot_product = np.dot(A[..., i], A[..., j])
-        if dot_product >= K:
-            greater_than.add((i, j))
-        else:
-            less_than.add((i, j))
-
-    print(len(greater_than))
-    print(greater_than)
+    # greater_than = set()
+    # less_than = set()
+    #
+    # for i, j in R:
+    #     dot_product = np.dot(A[..., i], A[..., j])
+    #     if dot_product >= K:
+    #         greater_than.add((i, j))
+    #     else:
+    #         less_than.add((i, j))
+    #
+    # print(len(greater_than))
+    # print(greater_than)
