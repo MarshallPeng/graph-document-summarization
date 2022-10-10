@@ -1,8 +1,7 @@
 from embeddings.sbert import SBert
 from loader.load import SQuALITYLoader
 from sampler.cohen_lewis import find_similar_pairs, CohenLewis
-import numpy as np
-from random import randint
+from visualize.CircleVisualizer import CircleVisualizer
 
 # Load data from SQuality
 loader = SQuALITYLoader()
@@ -35,6 +34,8 @@ for doc_id in id_to_embeddings:
     greater_than = set()
     less_than = set()
 
+    print(R)
+
     for pair in R:
         if R[pair]['dot_product'] >= K:
             greater_than.add(pair)
@@ -43,3 +44,8 @@ for doc_id in id_to_embeddings:
 
     print(f'num greater than: {len(greater_than)}')
     print(f'num less than: {len(less_than)}')
+
+    # Generate Circle Visualization
+    vis = CircleVisualizer(A, K, R)
+    vis.visualize_brute_force()
+    vis.visualize_sampled()
