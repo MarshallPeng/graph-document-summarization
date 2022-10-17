@@ -10,11 +10,9 @@ class CohenLewis:
         self.A = A
         self.d = A.shape[0]
         self.n = A.shape[1]
-        self.H = 100
-        self.gram_matrix = self.A.T @ self.A
-        self.delta = 0.01
-        self.gamma = np.sum(self.gram_matrix)
+        self.delta = 0.1
         self.scores = self._preprocess()  # dim 1 x d
+        self.gamma = np.sum(self.scores ** 2)
 
     def _preprocess(self):
         """
@@ -40,7 +38,8 @@ class CohenLewis:
         r = random.choices(np.arange(self.d), weights=self.scores ** 2)
 
         # Sample i with probability \frac{A_{ri}}{score(r)}
-        i = random.choices(np.arange(self.n), weights=np.squeeze(self.A[r]))[0]
+        # what if weights are negative? 
+        i = random.choices(np.arange(self.n), weights=np.squeeze(self.A[r]))[0] 
 
         # eliminate probability of j == i
         j_prob = np.squeeze(self.A[r])
@@ -52,7 +51,7 @@ class CohenLewis:
         return (i, j) if j >= i else (j, i)
 
 
-def find_similar_pairs(A, K=None):
+def find_similar_pairs(A, K):
     """
     Return pairs of columns of A with dot product >= K
     :param A:
@@ -60,8 +59,7 @@ def find_similar_pairs(A, K=None):
     :return:
     """
     sampler = CohenLewis(A)
-    K = sampler.gamma / sampler.H if K is None else K
-    N = math.ceil((sampler.gamma / K) * math.log(sampler.gamma / (K * sampler.delta)))
+    N = (math.ceil((sampler.gamma / K) * math.log(sampler.gamma / (K * sampler.delta)))) 
     R = {}
 
     print(f'Sampling {N} pairs')

@@ -1,7 +1,8 @@
 import numpy as np
 from mne_connectivity.viz import plot_connectivity_circle
 import matplotlib.pyplot as plt
-
+import sys
+np.set_printoptions(threshold=sys.maxsize)
 
 class CircleVisualizer:
     """
@@ -24,11 +25,15 @@ class CircleVisualizer:
         :return:
         """
         node_names = [f'{i}' for i in range(self.n)]
-        gram_matrix = self.A.T @ self.A
+        gram_matrix = np.array(self.A.T @ self.A, dtype=np.float32)
+        gram_matrix[gram_matrix < (self.K * 1.0)] = np.NaN
         np.fill_diagonal(gram_matrix, np.NaN)  # get rid of diagonals
+
         fig, ax = plt.subplots(figsize=(20, 20), facecolor='black',
                                subplot_kw=dict(polar=True))
+
         plot_connectivity_circle(gram_matrix, node_names, ax=ax)
+
         fig.savefig("brute_force_visualize", dpi=300)
 
     def visualize_sampled(self):
