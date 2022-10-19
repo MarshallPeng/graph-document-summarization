@@ -35,7 +35,8 @@ if __name__ == "__main__":
 
     X = A.T @ A
     np.fill_diagonal(X, -1)
-    gram = np.asarray(X).flatten()
+    print(sorted(np.asarray(X).flatten())[::-1])
+    print(sorted(result)[::-1])
 
     vis = CircleVisualizer(A, K, R)
     vis.visualize_brute_force()
