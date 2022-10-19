@@ -32,7 +32,7 @@ if __name__ == "__main__":
     #
     # print(len(greater_than))
     # print(greater_than)self.gamma = np.sum(self.gram_matrix)
-    
+
     X = A.T @ A
     np.fill_diagonal(X, -1)
     gram = np.asarray(X).flatten()

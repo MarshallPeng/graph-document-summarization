@@ -18,6 +18,7 @@ class CircleVisualizer:
         self.n = A.shape[1]
         self.R = R
         self.K = K
+        self.gram_matrix = None
 
     def visualize_brute_force(self):
         """
@@ -25,14 +26,14 @@ class CircleVisualizer:
         :return:
         """
         node_names = [f'{i}' for i in range(self.n)]
-        gram_matrix = np.array(self.A.T @ self.A, dtype=np.float32)
-        gram_matrix[gram_matrix <= (self.K * 1.0)] = np.NaN
-        np.fill_diagonal(gram_matrix, np.NaN)  # get rid of diagonals
+        self.gram_matrix = np.array(self.A.T @ self.A, dtype=np.float32)
+        self.gram_matrix[self.gram_matrix < (self.K * 1.0)] = np.NaN
+        np.fill_diagonal(self.gram_matrix, np.NaN)  # get rid of diagonals
 
         fig, ax = plt.subplots(figsize=(20, 20), facecolor='black',
                                subplot_kw=dict(polar=True))
 
-        plot_connectivity_circle(gram_matrix, node_names, ax=ax, title="Brute Force")
+        plot_connectivity_circle(self.gram_matrix, node_names, ax=ax, title="Brute Force", fontsize_title=36)
 
         fig.savefig("brute_force_visualize", dpi=300)
 
@@ -44,12 +45,11 @@ class CircleVisualizer:
         node_names = [f'{i}' for i in range(self.n)]
 
         con = np.zeros((self.n, self.n))
+        con[:] = np.NaN
         for pair in self.R:
             con[pair[1], pair[0]] = self.R[pair]['dot_product'] if self.R[pair]['dot_product'] >= self.K else np.NaN
 
-        print(con)
-
         fig, ax = plt.subplots(figsize=(20, 20), facecolor='black',
                                subplot_kw=dict(polar=True))
-        plot_connectivity_circle(con, node_names, ax=ax, title="Cohen Lewis")
+        plot_connectivity_circle(con, node_names, ax=ax, title="Cohen Lewis", fontsize_title=36)
         fig.savefig("sampled_visualize", dpi=300)
