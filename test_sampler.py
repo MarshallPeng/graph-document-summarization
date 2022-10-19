@@ -32,14 +32,10 @@ if __name__ == "__main__":
     #
     # print(len(greater_than))
     # print(greater_than)self.gamma = np.sum(self.gram_matrix)
-    print("d = ", d)
-    print("n = ", n)
+    
     X = A.T @ A
-    print("gram = ", X)
     np.fill_diagonal(X, -1)
     gram = np.asarray(X).flatten()
-    print(sorted(gram)[::-1])
-    print(sorted(result)[::-1])
 
     vis = CircleVisualizer(A, K, R)
     vis.visualize_brute_force()
