@@ -1,10 +1,10 @@
 import numpy as np
-from sampler.cohen_lewis import find_similar_pairs
+from sampler.cohen_lewis import find_similar_pairs, find_similar_pairs_without_false_positive
 from visualize.CircleVisualizer import CircleVisualizer
 
 d = 20
 n = 30
-K = 10
+K = 8
 
 
 if __name__ == "__main__":
@@ -14,7 +14,7 @@ if __name__ == "__main__":
     #A[A > 1] = 0
     #A[A != 0] = 1
 
-    R = find_similar_pairs(A, K)
+    R = find_similar_pairs_without_false_positive(A, K)
     print(A)
     result = []
     for i in R:

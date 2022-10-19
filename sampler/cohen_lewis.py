@@ -13,6 +13,8 @@ class CohenLewis:
         self.delta = 0.1
         self.scores = self._preprocess()  # dim 1 x d
         self.gamma = np.sum(self.scores ** 2)
+        self.eps = 0.5
+        self.coeff = 2
 
     def _preprocess(self):
         """
@@ -62,7 +64,7 @@ def find_similar_pairs(A, K):
     N = (math.ceil((sampler.gamma / K) * math.log(sampler.gamma / (K * sampler.delta)))) 
     R = {}
 
-    print(f'Sampling {N} pairs')
+    print(f'Sampling {N} pairs using naive Cohen-Lewis')
     for i in tqdm(range(N), position=0, leave=True):
         sample = sampler.cohen_lewis()
 
@@ -73,3 +75,35 @@ def find_similar_pairs(A, K):
         R[sample]['count'] += 1
 
     return R
+
+
+def find_similar_pairs_without_false_positive(A, K):
+    """
+    Return pairs of columns of A with dot product >= K
+    :param A:
+    :param K:
+    :return:
+    """
+    sampler = CohenLewis(A)
+    N = math.ceil((sampler.gamma / K) * math.log(sampler.gamma / (K * sampler.delta)) * (1 / sampler.eps ** 2))
+    threshold = sampler.coeff * math.ceil((1 - sampler.eps / 2) * math.log(sampler.gamma / (K * sampler.delta)) * (1 / sampler.eps ** 2))
+    R = {}
+
+    print(f'Sampling {N} pairs using Cohen-Lewis')
+    for i in tqdm(range(N), position=0, leave=True):
+        sample = sampler.cohen_lewis()
+
+        if sample not in R:
+            R[sample] = {}
+            R[sample]['count'] = 0
+            R[sample]['dot_product'] = np.dot(A[..., sample[0]], A[..., sample[1]])
+        R[sample]['count'] += 1
+
+    S = {}
+    for sample in R:
+        if R[sample]['count'] >= threshold:
+            S[sample] = {}
+            S[sample]['count'] = R[sample]['count']
+            S[sample]['dot_product'] = R[sample]['dot_product']
+
+    return S
