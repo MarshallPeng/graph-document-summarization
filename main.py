@@ -2,6 +2,9 @@ from embeddings.sbert import SBert
 from loader.load import SQuALITYLoader
 from sampler.cohen_lewis import find_similar_pairs, CohenLewis
 from visualize.CircleVisualizer import CircleVisualizer
+import torch
+
+from torchsample.transforms import RangeNormalize
 
 # Load data from SQuality
 loader = SQuALITYLoader()
@@ -26,7 +29,9 @@ for doc_id in id_to_embeddings:
     n = A.shape[1]
 
     # zero out negative values
-    A[A < 0] = 0
+    # A[A < 0] = 0
+    norm_01 = RangeNormalize(0, 1)
+    A = norm_01(torch.tensor(A)).numpy()
 
     K = 0.5
     R = find_similar_pairs(A, K)

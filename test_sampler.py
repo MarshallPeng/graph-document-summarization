@@ -1,6 +1,11 @@
 import numpy as np
 from sampler.cohen_lewis import find_similar_pairs, find_similar_pairs_without_false_positive
 from visualize.CircleVisualizer import CircleVisualizer
+import time
+import torch
+from torchsample.transforms import RangeNormalize
+
+from visualize.HistogramVisualizer import HistogramVisualizer
 
 d = 20
 n = 30
@@ -9,13 +14,17 @@ K = 8
 
 if __name__ == "__main__":
     A = np.random.randint(2, size=(d, n))
+    norm_01 = RangeNormalize(0, 1)
+    A = norm_01(torch.tensor(A)).numpy()
 
     # Sparse out the matrix:
     #A[A > 1] = 0
     #A[A != 0] = 1
-
+    start = time.process_time()
     R = find_similar_pairs_without_false_positive(A, K)
-    print(A)
+    print(f'Cohen Lewis sample time: {time.process_time() - start}')
+
+    # print(A)
     result = []
     for i in R:
         result.append(R[i]['dot_product'])

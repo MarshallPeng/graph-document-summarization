@@ -2,7 +2,24 @@ import numpy as np
 from mne_connectivity.viz import plot_connectivity_circle
 import matplotlib.pyplot as plt
 import sys
+import time
 np.set_printoptions(threshold=sys.maxsize)
+
+
+def matrix_multiply_for_loop(A, B):
+    start = time.process_time()
+    result = []  # final result
+    for i in range(len(A)):
+        row = []  # the new row in new matrix
+        for j in range(len(B[0])):
+            product = 0  # the new element in the new row
+            for v in range(len(A[i])):
+                product += A[i][v] * B[v][j]
+            row.append(product)  # append sum of product into the new row
+        result.append(row)  # append the new row into the final result
+    print(f'For Loop Matrix Mul time: {time.process_time() - start}')
+    return result
+
 
 class CircleVisualizer:
     """
@@ -20,13 +37,17 @@ class CircleVisualizer:
         self.K = K
         self.gram_matrix = None
 
-    def visualize_brute_force(self):
+    def visualize_brute_force(self, use_numpy=False):
         """
         Create Circle Visualization by brute force calculating dot product between each pair
         :return:
         """
         node_names = [f'{i}' for i in range(self.n)]
-        self.gram_matrix = np.array(self.A.T @ self.A, dtype=np.float32)
+        if use_numpy:
+            self.gram_matrix = np.array(self.A.T @ self.A, dtype=np.float32)
+        else:
+            self.gram_matrix = np.array(matrix_multiply_for_loop(self.A.T, self.A), dtype=np.float32)
+
         self.gram_matrix[self.gram_matrix < (self.K * 1.0)] = np.NaN
         np.fill_diagonal(self.gram_matrix, np.NaN)  # get rid of diagonals
 
