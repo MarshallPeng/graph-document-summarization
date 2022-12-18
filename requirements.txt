@@ -1,2 +1,4 @@
 numpy~=1.22.3
 nltk~=3.7
+mne~=1.1.1
+mne_connectivity~=0.4.0
