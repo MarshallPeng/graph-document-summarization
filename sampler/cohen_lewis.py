@@ -10,11 +10,18 @@ class CohenLewis:
         self.A = A
         self.d = A.shape[0]
         self.n = A.shape[1]
-        self.delta = 0.1
+        self.delta = 0.2
         self.scores = self._preprocess()  # dim 1 x d
-        self.gamma = np.sum(self.scores ** 2)
+        self.weights = self.scores ** 2
+        self.arangen = np.arange(self.n)
+        self.aranged = np.arange(self.d)
+        #self.normalized_weights = self.weights/self.weights.sum()
+        #self.normalized_A = self.A/self.scores[:,np.newaxis]
+        self.gamma = np.sum(self.weights)
+        print(self.gamma - np.sum(A.T @ A))
         self.eps = 0.5
-        self.coeff = 2
+        self.coeff = 3.5
+        self.acc = 25
 
     def _preprocess(self):
         """
@@ -37,18 +44,20 @@ class CohenLewis:
         :return:
         """
         # Sample a feature with probability proportional to square of score
-        r = random.choices(np.arange(self.d), weights=self.scores ** 2)
+        r = random.choices(self.aranged, self.weights)
 
         # Sample i with probability \frac{A_{ri}}{score(r)}
         # what if weights are negative? 
-        i = random.choices(np.arange(self.n), weights=np.squeeze(self.A[r]))[0] 
+        
+        weight_r = np.squeeze(self.A[r])
+        i = random.choices(self.arangen, weight_r)[0]
 
         # eliminate probability of j == i
-        j_prob = np.squeeze(self.A[r])
-        j_prob[i] = 0
+        
+        weight_r[i] = 0
 
         # Sample j with probability \frac{A_{rj}}{score(r)}
-        j = random.choices(np.arange(self.n), weights=j_prob)[0]
+        j = random.choices(self.arangen, weight_r)[0]
 
         return (i, j) if j >= i else (j, i)
 
@@ -61,18 +70,21 @@ def find_similar_pairs(A, K):
     :return:
     """
     sampler = CohenLewis(A)
-    N = (math.ceil((sampler.gamma / K) * math.log(sampler.gamma / (K * sampler.delta)))) 
+    N = (math.ceil((sampler.gamma / K) * math.log(sampler.gamma / (K * sampler.delta)))) // sampler.acc
     R = {}
 
     print(f'Sampling {N} pairs using naive Cohen-Lewis')
     for i in tqdm(range(N), position=0, leave=True):
         sample = sampler.cohen_lewis()
-
-        if sample not in R:
+        product = 0
+        for i in range(len(A)):
+            product += A[i][sample[0]] * A[i][sample[1]]
+        #product = np.dot(A[..., sample[0]], A[..., sample[1]])
+        if sample not in R and product >= K:
             R[sample] = {}
-            R[sample]['count'] = 0
-            R[sample]['dot_product'] = np.dot(A[..., sample[0]], A[..., sample[1]])
-        R[sample]['count'] += 1
+            # R[sample]['count'] = 0
+            R[sample]['dot_product'] = product
+        # R[sample]['count'] += 1
 
     return R
 
@@ -85,9 +97,11 @@ def find_similar_pairs_without_false_positive(A, K):
     :return:
     """
     sampler = CohenLewis(A)
-    N = math.ceil((sampler.gamma / K) * math.log(sampler.gamma / (K * sampler.delta)) * (1 / sampler.eps ** 2))
-    threshold = sampler.coeff * math.ceil((1 - sampler.eps / 2) * math.log(sampler.gamma / (K * sampler.delta)) * (1 / sampler.eps ** 2))
+    print(f'There can be at most {sampler.gamma / K} pairs with dot product at least {K}')
+    N = math.ceil((sampler.gamma / K) * math.log(sampler.gamma / (K * sampler.delta)) * (1 / sampler.eps ** 2)) // sampler.acc
+    threshold = int(sampler.coeff * math.ceil((1 - sampler.eps / 2) * math.log(sampler.gamma / (K * sampler.delta)) * (1 / sampler.eps ** 2))) // sampler.acc
     R = {}
+    S = {}
 
     print(f'Sampling {N} pairs using Cohen-Lewis')
     for i in tqdm(range(N), position=0, leave=True):
@@ -96,14 +110,44 @@ def find_similar_pairs_without_false_positive(A, K):
         if sample not in R:
             R[sample] = {}
             R[sample]['count'] = 0
-            R[sample]['dot_product'] = np.dot(A[..., sample[0]], A[..., sample[1]])
         R[sample]['count'] += 1
-
-    S = {}
-    for sample in R:
         if R[sample]['count'] >= threshold:
             S[sample] = {}
-            S[sample]['count'] = R[sample]['count']
-            S[sample]['dot_product'] = R[sample]['dot_product']
 
     return S
+
+
+
+def matrix_multiply_for_loop(A, B):
+    result = []  # final result
+    for i in range(len(A)):
+        row = []  # the new row in new matrix
+        for j in range(len(B[0])):
+            product = 0  # the new element in the new row
+            for v in range(len(A[i])):
+                product += A[i][v] * B[v][j]
+            row.append(product)  # append sum of product into the new row
+        result.append(row)  # append the new row into the final result
+    return result
+
+
+def find_similar_pairs_brute_force(A, K):
+    """
+    Return pairs of columns of A with dot product >= K
+    :param A:
+    :param K:
+    :return:
+    """
+    
+    
+    gram = matrix_multiply_for_loop(A.T, A)
+    R = {}
+
+    
+    for i in range(len(gram)):
+        for j in range(i, len(gram[0])):
+            if gram[i][j] >= K:
+                R[(i, j)] = {}
+                R[(i, j)]['dot_product'] = gram[i][j]
+
+    return R
