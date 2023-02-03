@@ -2,8 +2,12 @@ from embeddings.sbert import SBert
 from loader.load import SQuALITYLoader
 from sampler.cohen_lewis import find_similar_pairs_without_false_positive
 from visualize.CircleVisualizer import CircleVisualizer
+import pandas as pd
+import numpy as np
 import torch
 
+
+from visualize.CosineSimilarityVisualizer import CosineSimilarityVisualizer
 
 # Load data from SQuality
 loader = SQuALITYLoader()
@@ -29,10 +33,11 @@ for doc_id in id_to_embeddings:
     print("number of pairs:", n ** 2)
     # zero out negative values
 
-    #A[A < 0] = 0
-    
-    A = A + 1
-    K = d
+
+    cos_sim_vis = CosineSimilarityVisualizer(A, 20)
+    cos_sim_vis.visualize()
+
+    K = 0.5
     R = find_similar_pairs_without_false_positive(A, K)
 
 
