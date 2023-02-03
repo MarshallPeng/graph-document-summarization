@@ -12,22 +12,19 @@ class CohenLewis:
         self.n = A.shape[1]
         self.delta = 0.2
         self.scores = self._preprocess()  # dim 1 x d
-        self.weights = self.scores ** 2
-        self.arangen = np.arange(self.n)
-        self.aranged = np.arange(self.d)
-        #self.normalized_weights = self.weights/self.weights.sum()
-        #self.normalized_A = self.A/self.scores[:,np.newaxis]
-        self.gamma = np.sum(self.weights)
-        print(self.gamma - np.sum(A.T @ A))
-        self.eps = 0.5
-        self.coeff = 3.5
-        self.acc = 25
+
+        self.gamma = np.sum(self.scores ** 2)
+        self.eps = 0.3
+        self.coeff1 = 2 # 1/constant of sample size N
+        self.coeff2 = 2 # constant of threshold X
+
 
     def _preprocess(self):
         """
         Upon input of the d x n matrix A, compute L1 norm of each row
         :return:
         """
+        #return np.sum(self.A, axis = 1)
         return np.linalg.norm(self.A, axis=1, ord=1)
 
     def _score(self, r):
@@ -97,13 +94,16 @@ def find_similar_pairs_without_false_positive(A, K):
     :return:
     """
     sampler = CohenLewis(A)
-    print(f'There can be at most {sampler.gamma / K} pairs with dot product at least {K}')
-    N = math.ceil((sampler.gamma / K) * math.log(sampler.gamma / (K * sampler.delta)) * (1 / sampler.eps ** 2)) // sampler.acc
-    threshold = int(sampler.coeff * math.ceil((1 - sampler.eps / 2) * math.log(sampler.gamma / (K * sampler.delta)) * (1 / sampler.eps ** 2))) // sampler.acc
+    H = sampler.gamma / K
+    T = math.log(sampler.gamma / (K * sampler.delta)) / sampler.coeff1
+    N = math.ceil((1 / sampler.eps ** 2) * H * T)
+    threshold = sampler.coeff2 * math.ceil((1 / sampler.eps ** 2) * (1 - sampler.eps / 2) * T)
+
     R = {}
     S = {}
 
     print(f'Sampling {N} pairs using Cohen-Lewis')
+    #assert(False)
     for i in tqdm(range(N), position=0, leave=True):
         sample = sampler.cohen_lewis()
 
@@ -113,6 +113,7 @@ def find_similar_pairs_without_false_positive(A, K):
         R[sample]['count'] += 1
         if R[sample]['count'] >= threshold:
             S[sample] = {}
+
 
     return S
 

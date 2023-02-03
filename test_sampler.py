@@ -32,10 +32,14 @@ if __name__ == "__main__":
     T = find_similar_pairs_brute_force(A, K)
     print(f'For Loop Matrix Mul time: {time.process_time() - start}')
 
-    # print(A)
-    # result = []
-    # for i in R:
-    #     result.append(R[i]['dot_product'])
+
+    R = find_similar_pairs_without_false_positive(A, K)
+    print(A)
+    print(R)
+    #result = []
+    #for i in R:
+    #    result.append(R[i]['dot_product'])
+
 
     # greater_than = set()
     # less_than = set()
@@ -50,16 +54,12 @@ if __name__ == "__main__":
     # print(len(greater_than))
     # print(greater_than)self.gamma = np.sum(self.gram_matrix)
 
-    # X = A.T @ A
-    # np.fill_diagonal(X, -1)
-    # print(sorted(np.asarray(X).flatten())[::-1])
-    # print(sorted(result)[::-1])
 
-    # vis = CircleVisualizer(A, K, R, "Cohen-Lewis (false positive removed)")
-    # vis.visualize()
+    X = A.T @ A
+    np.fill_diagonal(X, -1)
+    print(sorted(np.asarray(X).flatten())[::-1])
+    #print(sorted(result)[::-1])
 
-    vis = CircleVisualizer(A, K, S, "Cohen-Lewis")
-    vis.visualize()
-
-    vis = CircleVisualizer(A, K, T, "Brute Force")
-    vis.visualize()
+    vis = CircleVisualizer(A, K - 1, R)
+    vis.visualize_brute_force()
+    vis.visualize_sampled_2()
