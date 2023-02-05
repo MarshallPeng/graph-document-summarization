@@ -37,8 +37,8 @@ for doc_id in id_to_embeddings:
     cos_sim_vis = CosineSimilarityVisualizer(A, 20)
     cos_sim_vis.visualize()
 
-    K = 0.5
-    R = find_similar_pairs_without_false_positive(A, K)
+    #K = 0.5
+    #R = find_similar_pairs_without_false_positive(A, K)
 
 
     # greater_than = set()
@@ -55,7 +55,10 @@ for doc_id in id_to_embeddings:
     # print(f'num greater than: {len(greater_than)}')
     # print(f'num less than: {len(less_than)}')
 
+
+
+
     # Generate Circle Visualization
-    vis = CircleVisualizer(A, K, R)
-    vis.visualize_brute_force()
-    vis.visualize_sampled_2()
+    #vis = CircleVisualizer(A, K, R)
+    #vis.visualize_brute_force()
+    #vis.visualize_sampled_2()
