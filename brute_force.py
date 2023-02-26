@@ -30,6 +30,11 @@ sbert = SBert()
 
 doc_id = '63833'
 sentences = loader.get_sentences(loader.data['dev'][doc_id])
+#print(sentences)
+#assert{False}
+paragraphs = "".join(sentences).split("\n")
+paragraphs = [i.strip() for i in paragraphs if i.strip() != ""]
+
 embeddings = sbert.encode(sentences)
 
 norm_01 = RangeNormalize(0, 1)
@@ -82,13 +87,27 @@ for i in range(n_clusters):
 
     cluster = cluster_map.loc[cluster_map['clusters'] == i]['sentences'].tolist()
     cluster_text = "\n".join(cluster)
-    summarized_clusters.append(text_summarization(cluster_text, "T5"))
+    summarized_clusters.append(text_summarization(cluster_text, "flan-T5"))
 
 print("Summary of %d clusters:" % n_clusters)
 for index, summary in enumerate(summarized_clusters):
     print("Cluster %d has summary %s" % (index, summary))
 
-article_summary = text_summarization("\n".join(summarized_clusters), "T5")
+article_summary = text_summarization("\n".join(summarized_clusters), "flan-T5")
+print("Article level summarization:")
+print(article_summary)
+
+
+
+summarized_paragraphs = []
+for i in range(len(paragraphs)):
+    summarized_paragraphs.append(text_summarization(paragraphs[i], "flan-T5"))
+
+print("Summary of %d paragraphs:" % len(paragraphs))
+for index, summary in enumerate(summarized_paragraphs):
+    print("Paragraph %d has summary %s" % (index, summary))
+
+article_summary = text_summarization("\n".join(summarized_paragraphs), "flan-T5")
 print("Article level summarization:")
 print(article_summary)
 
